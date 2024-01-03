@@ -1,0 +1,20 @@
+{
+  "name": "midi2keys",
+  "version": "0.1.0",
+  "description": "Converts MIDI messages to keyboard strokes",
+  "main": "index.js",
+  "author": "Håkan Canberger <800302+HCanber@users.noreply.github.com>",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "enquirer": "^2.4.1",
+    "macos-accessibility-permissions": "^1.0.1",
+    "midi": "^2.0.0",
+    "midi-message-parser": "^2.0.1",
+    "robotjs": "^0.6.0",
+    "strip-json-comments": "^5.0.1"
+  },
+  "scripts": {
+    "start": "node index.mjs"
+  }
+}
