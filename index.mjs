@@ -73,7 +73,6 @@ if (args.createConfig) {
   const selectedPort = await portPrompt.run()
   // Replace preferredInput with selected port
   var { preferredInput: prefInput } = JSON.parse(stripJsonComments(exampleConfig))
-  console.log(selectedPort)
   exampleConfig = exampleConfig.replace(prefInput, selectedPort.value === none ? '' : selectedPort.value)
   await fs.writeFile(configFilename, exampleConfig)
   console.log(`Created ${configFilename}`)
