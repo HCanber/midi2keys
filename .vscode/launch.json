@@ -10,7 +10,7 @@
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/index.mjs",
-      "args": ["--debug", "-c", "example_config.jsonc"],
+      "args": ["--debug", "--monitor", "-c", "example_config.jsonc"],
       "outFiles": ["${workspaceFolder}/**/*.js"],
       "console": "externalTerminal"
     }
