@@ -80,11 +80,15 @@ if (!configFilename && !args.monitor) {
 }
 
 // Read config file if it exists
-let config
+let config = null
 if (configPath && (await fileExists(configPath))) {
-  const json = JSON.parse(stripJsonComments(await fs.readFile(configPath, 'utf8')))
-  config = parseConfig(json)
-} else {
+  const fileContents = (await fs.readFile(configPath, 'utf8')).trim()
+  if (fileContents.length > 0) {
+    const json = JSON.parse(stripJsonComments(fileContents))
+    config = parseConfig(json)
+  }
+}
+if (config === null) {
   config = { matcherFunctionsByType: new Map() }
 }
 
