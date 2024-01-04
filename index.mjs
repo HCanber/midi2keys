@@ -18,8 +18,8 @@ const emptyStringFormat = () => ''
 
 program
   .version('0.1.0')
-  .option('-c, --config <filename>', 'Specify a config file')
-  .option('-d, --debug', 'Enable debugging')
+  .option('-c, --config <filename>', 'The config file to use')
+  .option('-d, --debug', 'Enable debug logging, including logging of received midi messages')
   .parse(process.argv)
 
 var args = program.opts()

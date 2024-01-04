@@ -41,8 +41,8 @@ where `<filename>` is the name of the config file.
 Usage: node index.mjs --config <filename> [options]
 
 Options:
-  -c, --config <filename>  Specify a config file
-  -d, --debug              Enable debug logging
+  -c, --config <filename>  The config file to use
+  -d, --debug              Enable debug logging, including logging of received midi messages
   -V, --version            output the version number
   -h, --help               display help for command
 ```
