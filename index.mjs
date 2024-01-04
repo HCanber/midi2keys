@@ -27,10 +27,13 @@ program
     '-i, --input <name>',
     'The name of the midi input to use. Use --list-inputs to list available inputs. Will override preferredInput in config file.',
   )
-  .option('    --list-inputs', 'List available midi inputs')
   .option('-m, --monitor', 'Enable logging of received midi messages')
-  .option('-c, --config <filename>', 'The config file to use')
   .option('-d, --debug', 'Enable debug logging, including logging of received midi messages')
+  .option('    --list-inputs', 'List available midi inputs')
+  .option(
+    '    --create-config [filename]',
+    'Creates a config file based on example config. Use this as a starting point',
+  )
   .version(packageJson.version, '-v, --version', 'Outputs the version number')
   .helpOption('-h, --help', 'Display this help')
   .showSuggestionAfterError(true)
@@ -45,6 +48,17 @@ var args = program.opts()
 const debugLog = args.debug ? console.log : () => {}
 const ifDebug = args.debug ? (fn) => fn(console.log) : () => {}
 
+if (args.createConfig) {
+  let configFilename = typeof args.createConfig === 'string' ? args.createConfig : defaultConfigFile
+  if (await fileExists(configFilename)) {
+    console.error(`File ${configFilename} already exists.`)
+    process.exit(1)
+  }
+  const exampleConfig = await fs.readFile(Path.resolve(__dirname, exampleConfigFile), 'utf8')
+  await fs.writeFile(configFilename, exampleConfig)
+  console.log(`Created ${configFilename}`)
+  process.exit(0)
+}
 let configFilename = args.config
 let configPath = null
 const shouldProcessConfig = !args.listInputs
