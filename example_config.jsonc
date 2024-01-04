@@ -13,7 +13,7 @@
     //
     { "key": "1", "midi": [{ "cc": 107, "ch": "any", "value": "any" }] },
     { "key": "command+c", "midi": [{ "cc": 108, "ch": 1 }] },
-    { "key": ["H","e","l","l","o"], "midi": [{ "cc": 109 }] },
+    { "key": ["shift+h","e","l","l","o"], "midi": [{ "cc": 109 }] },
     { "key": "audio_play", "midi": [{ "on": 60, "ch": "any", "velocity": "any" }, { "off": 62 }] }
   ]
 }
