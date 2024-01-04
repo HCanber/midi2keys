@@ -9,7 +9,7 @@
     //       cc messages can have a value (if left out or set to "any" or "all", then all values matches)
     //       on/off messages can have a velocity (if left out or set to "any" or "all", then all velocities matches)
     //
-    // TIPS: Run with --debug to see what messages are received
+    // TIPS: Run with --monitor to see what messages are received
     //
     { "key": "1", "midi": [{ "cc": 107, "ch": "any", "value": "any" }] },
     { "key": "command+c", "midi": [{ "cc": 108, "ch": 1 }] },

@@ -13,11 +13,14 @@ const { Input } = midiPkg
 const { Confirm, Select } = enquirerPkg
 const { keyTap } = robotjsPkg
 
-const defaultConfigFile = 'example_config.jsonc'
+const defaultConfigFile = 'config.jsonc'
+const exampleConfigFile = 'example_config.jsonc'
 const emptyStringFormat = () => ''
 
 program
   .version('0.1.0')
+  .option('-c, --config <filename>', 'The config file to use')
+  .option('-m, --monitor', 'Enable logging of received midi messages')
   .option('-c, --config <filename>', 'The config file to use')
   .option('-d, --debug', 'Enable debug logging, including logging of received midi messages')
   .parse(process.argv)
@@ -47,19 +50,25 @@ if (process.platform === 'darwin') {
   }
   debugLog('\u001b[32m✓\u001b[0m Permissions to send key strokes granted!\n')
 }
+
 let configFilename = args.config
-let configPath
-if (!configFilename) {
+let configPath = null
+if (!configFilename && !args.monitor) {
   console.log('No config file specified. Use -c <filename> to specify a config file.')
+  const defaultConfigFileExists = await fileExists(defaultConfigFile)
+  const suggestedFilename = defaultConfigFileExists ? defaultConfigFile : exampleConfigFile
   const useDefaultConfig = await new Confirm({
-    message: `Use default: ${defaultConfigFile}?`,
+    message: `Use: ${suggestedFilename}?`,
     format: emptyStringFormat,
+    initial: true,
   }).run()
-  if (!useDefaultConfig) {
+  if (useDefaultConfig) {
+    configPath = path.resolve(suggestedFilename)
+  } else if (!args.monitor) {
+    console.log('No config file specified and --monitor has not been specified. Exiting.')
     process.exit(0)
   }
-  configPath = path.resolve(defaultConfigFile)
-} else {
+} else if (configFilename) {
   configPath = path.resolve(configFilename)
   if (!(await fileExists(configPath))) {
     console.log(`Config file ${configPath} does not exist.`)
@@ -72,11 +81,11 @@ if (!configFilename) {
 
 // Read config file if it exists
 let config
-if (await fileExists(configPath)) {
+if (configPath && (await fileExists(configPath))) {
   const json = JSON.parse(stripJsonComments(await fs.readFile(configPath, 'utf8')))
   config = parseConfig(json)
 } else {
-  config = {}
+  config = { matcherFunctionsByType: new Map() }
 }
 
 const { preferredInput, matcherFunctionsByType } = config
@@ -133,12 +142,12 @@ selectedInput.on('message', (deltaTime, message) => {
       }
     }
   }
-  ifDebug((log) => {
+  if (args.monitor) {
     const p = parsedToConfig(parsed).join(', ')
     const strKeys = keys ? ` => Key: ${keys.map((k) => `\u001b[1m${keyToString(k)}\u001b[0m`).join(', ')}` : ''
     const message = `MIDI: ${p}${strKeys}`
-    return log(message)
-  })
+    return console.log(message)
+  }
 })
 
 function parsedToConfig(parsed) {

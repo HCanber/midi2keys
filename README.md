@@ -56,11 +56,19 @@ Usage: node index.mjs --config <filename> [options]
 
 Options:
   -c, --config <filename>  The config file to use
+  -m, --monitor            Enable logging of received midi messages
   -d, --debug              Enable debug logging, including logging of received midi messages
   -V, --version            output the version number
   -h, --help               display help for command
 ```
 
+If you only want to use the program as a MIDI monitor, you can run it with:
+
+```sh
+node index.mjs --monitor
+```
+
 ## Config File
 
 See [example_config.jsonc](example_config.jsonc) for an example config file.
+The format is JSONC, which means that it's JSON that allows comments.
