@@ -15,7 +15,7 @@ const { Input } = midiPkg
 const { Confirm, Select } = enquirerPkg
 const { keyTap } = robotjsPkg
 
-const defaultConfigFile = 'config.jsonc'
+const defaultConfigFile = 'midikeys_config.jsonc'
 const exampleConfigFile = 'example_config.jsonc'
 const emptyStringFormat = () => ''
 
@@ -49,12 +49,32 @@ const debugLog = args.debug ? console.log : () => {}
 const ifDebug = args.debug ? (fn) => fn(console.log) : () => {}
 
 if (args.createConfig) {
-  let configFilename = typeof args.createConfig === 'string' ? args.createConfig : defaultConfigFile
+  const createConfigArgument = args.createConfig
+  let configFilename = typeof createConfigArgument === 'string' ? createConfigArgument : defaultConfigFile
   if (await fileExists(configFilename)) {
-    console.error(`File ${configFilename} already exists.`)
+    console.error(
+      `File ${configFilename} already exists. Use \u001b[1m--create-config <filename>\u001b[0m to specify a different filename.`,
+    )
     process.exit(1)
   }
-  const exampleConfig = await fs.readFile(Path.resolve(__dirname, exampleConfigFile), 'utf8')
+  let exampleConfig = await fs.readFile(Path.resolve(__dirname, exampleConfigFile), 'utf8')
+  const { midiPorts } = getInputAndMidiPorts()
+  const none = '<None>'
+  let choices = [...midiPorts.map(({ name }) => ({ name, value: name })), { name: none, value: none }]
+  const portPrompt = new Select({
+    name: 'port',
+    message: 'Select port to set as preferredInput in config file',
+    choices: choices,
+    result(name) {
+      return this.find(name)
+    },
+  })
+
+  const selectedPort = await portPrompt.run()
+  // Replace preferredInput with selected port
+  var { preferredInput: prefInput } = JSON.parse(stripJsonComments(exampleConfig))
+  console.log(selectedPort)
+  exampleConfig = exampleConfig.replace(prefInput, selectedPort.value === none ? '' : selectedPort.value)
   await fs.writeFile(configFilename, exampleConfig)
   console.log(`Created ${configFilename}`)
   process.exit(0)
@@ -95,11 +115,7 @@ if (shouldProcessConfig) {
     }
   }
 }
-// Set up a new input.
-const input = new Input()
-
-// Count the available input ports.
-const midiPorts = getMidiPorts(input)
+const { input, midiPorts } = getInputAndMidiPorts()
 
 if (args.listInputs) {
   console.log('Available MIDI inputs:')
@@ -130,22 +146,23 @@ if (args.input) {
 
 let selectedPortIndex = null
 let selectedPortName = null
-let options = midiPorts.map(({ name, index }) => ({ name, value: index }))
+let choices = midiPorts.map(({ name, index }) => ({ name, value: index }))
 if (preferredInput) {
   const port = midiPorts.find((p) => p.name === preferredInput)
   if (port) {
     selectedPortIndex = port.index
     selectedPortName = port.name
-    options = null
+    choices = null
   }
 }
 
-if (options) {
+if (choices) {
   const portPrompt = new Select({
     name: 'port',
     message: 'Select an input port:',
-    choices: options,
+    choices: choices,
     result(name) {
+      console.log(name)
       return this.find(name)
     },
   })
@@ -266,12 +283,15 @@ async function fileExists(filename) {
   }
 }
 
-function getMidiPorts(input) {
+function getInputAndMidiPorts() {
+  // Set up a new midi input.
+  const input = new Input()
+
   const numberOfPorts = input.getPortCount()
   const ports = []
   for (let i = 0; i < numberOfPorts; i++) {
     const portName = input.getPortName(i)
     ports.push({ name: portName, index: i })
   }
-  return ports
+  return { input, midiPorts: ports }
 }

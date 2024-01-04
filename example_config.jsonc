@@ -1,5 +1,8 @@
 {
-  "preferredInput": "Minilab3 MIDI",
+  // preferredInput specifies which MIDI input to use. If left out, the user will be prompted. 
+  // Use --list-inputs to see available inputs
+  "preferredInput": "Minilab3 MIDI", 
+
   "keyStrokes": [
     // key:  can be a single character key, e.g. "a", "$", or named keys (see lib/keys.mjs) eg "f1"
     //       Modifiers 'alt', 'shift', 'command' & 'ctrl' are allowed, e.g. "command+shift+a"
