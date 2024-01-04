@@ -6,7 +6,7 @@ This is a simple program that listens to a midi device and sends key strokes to 
 
 ## DISCLAIMER!!!
 
-> Please note that this is not a finished program, just something I hacked together. It works, but I've only tested it on Mac M1, Sonoma.
+> Please note that this is not a finished program, just something I hacked together. It works, but I've only tested it on Mac M1, Sonoma 14.1.2.
 > I have no idea if it works on other platforms.
 
 ---
@@ -22,6 +22,8 @@ This is a simple program that listens to a midi device and sends key strokes to 
   ```sh
   yarn install
   ```
+
+- On Mac, the terminal app needs to be granted _System Settings > Privacy & Security > Accessibility_ permissions. The program will check and help you with this if it's not set. TYhe reason it needs this is to be able to send key strokes,
 
 ### Running
 
