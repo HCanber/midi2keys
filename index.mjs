@@ -47,13 +47,19 @@ const shouldProcessConfig = !args.listInputs
 if (shouldProcessConfig) {
   if (!configFilename && !args.monitor) {
     console.log('No config file specified. Use -c <filename> to specify a config file.')
-    const defaultConfigFileExists = await fileExists(defaultConfigFile)
-    const suggestedFilename = defaultConfigFileExists ? defaultConfigFile : exampleConfigFile
-    const useDefaultConfig = await new Confirm({
-      message: `Use: ${suggestedFilename}?`,
-      format: emptyStringFormat,
-      initial: true,
-    }).run()
+    const suggestedFilename = (await fileExists(defaultConfigFile))
+      ? defaultConfigFile
+      : (await fileExists(exampleConfigFile))
+      ? exampleConfigFile
+      : null
+    let useDefaultConfig = false
+    if (suggestedFilename) {
+      useDefaultConfig = await new Confirm({
+        message: `Use: ${suggestedFilename}?`,
+        format: emptyStringFormat,
+        initial: true,
+      }).run()
+    }
     if (useDefaultConfig) {
       configPath = path.resolve(suggestedFilename)
     } else if (!args.monitor) {
