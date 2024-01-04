@@ -30,28 +30,6 @@ var args = program.opts()
 const debugLog = args.debug ? console.log : () => {}
 const ifDebug = args.debug ? (fn) => fn(console.log) : () => {}
 
-// If running on macOS, check if Accessibility permissions are granted. They are neede to be able to send key strokes.
-if (process.platform === 'darwin') {
-  if (!hasPermissions()) {
-    const isIterm = process.env.TERM_PROGRAM === 'iTerm.app'
-    // Log in italic
-    console.log('\u001b[1mIn order to be able to send key strokes, accessibility permissions must be granted.\u001b[0m')
-    // prettier-ignore
-    console.log(`Under (\u001b[3mSystem Settings > Privacy & Security > Accessibility\u001b[0m, grant ${isIterm ? '\u001b[1miTerm\u001b[0m' : 'the terminal'}.\n`)
-    process.stdin.resume()
-    hasPermissions({ ask: true })
-    // Write to stdout witout newline
-    process.stdout.write('Waiting for permissions to be granted... (Ctrl-C to exit)')
-    while (!hasPermissions()) {
-      // Wait for permissions to be granted
-      await new Promise((resolve) => setTimeout(resolve, 200))
-    }
-    // Clear line and return to start of line
-    process.stdout.write('\u001b[2K\u001b[0G')
-  }
-  debugLog('\u001b[32m✓\u001b[0m Permissions to send key strokes granted!\n')
-}
-
 let configFilename = args.config
 let configPath = null
 if (!configFilename && !args.monitor) {
@@ -129,6 +107,28 @@ if (options) {
   const portPromptAnswer = await portPrompt.run()
   selectedPortIndex = portPromptAnswer.value
   selectedPortName = portPromptAnswer.name
+}
+
+// If running on macOS, check if Accessibility permissions are granted. They are neede to be able to send key strokes.
+if (matcherFunctionsByType.size > 0 && process.platform === 'darwin') {
+  if (!hasPermissions()) {
+    const isIterm = process.env.TERM_PROGRAM === 'iTerm.app'
+    // Log in italic
+    console.log('\u001b[1mIn order to be able to send key strokes, accessibility permissions must be granted.\u001b[0m')
+    // prettier-ignore
+    console.log(`Under (\u001b[3mSystem Settings > Privacy & Security > Accessibility\u001b[0m, grant ${isIterm ? '\u001b[1miTerm\u001b[0m' : 'the terminal'}.\n`)
+    process.stdin.resume()
+    hasPermissions({ ask: true })
+    // Write to stdout witout newline
+    process.stdout.write('Waiting for permissions to be granted... (Ctrl-C to exit)')
+    while (!hasPermissions()) {
+      // Wait for permissions to be granted
+      await new Promise((resolve) => setTimeout(resolve, 200))
+    }
+    // Clear line and return to start of line
+    process.stdout.write('\u001b[2K\u001b[0G')
+  }
+  debugLog('\u001b[32m✓\u001b[0m Permissions to send key strokes granted!\n')
 }
 
 const selectedInput = new Input()
