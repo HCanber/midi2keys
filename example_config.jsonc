@@ -3,7 +3,8 @@
   // Use --list-inputs to see available inputs
   "preferredInput": "Minilab3 MIDI", 
 
-  "keyStrokes": [
+  // Actions lists the keys to send when a MIDI message is received
+  "actions": [
     // key:  can be a single character key, e.g. "a", "$", or named keys (see lib/keys.mjs) eg "f1"
     //       Modifiers 'alt', 'shift', 'command' & 'ctrl' are allowed, e.g. "command+shift+a"
     //       Multiple keys to be pressed after each other can be specified as an array, e.g. ["H", "i", "!"]
@@ -16,7 +17,7 @@
     //
     { "key": "1", "midi": [{ "cc": 107, "ch": "any", "value": "any" }] },
     { "key": "command+c", "midi": [{ "cc": 108, "ch": 1 }] },
-    { "key": ["shift+h","e","l","l","o"], "midi": [{ "cc": 109 }] },
-    { "key": "audio_play", "midi": [{ "on": 60, "ch": "any", "velocity": "any" }, { "off": 62 }] }
+    { "key": ["shift+h","e","l","l","o"], "midi": [{ "on": 60 }] },
+    { "key": "audio_play", "midi": [{ "on": 62, "ch": "any", "velocity": "any" }, { "off": 64 }] }
   ]
 }
