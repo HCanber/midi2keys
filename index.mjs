@@ -131,13 +131,12 @@ if (matcherFunctionsByType.size > 0 && process.platform === 'darwin') {
   debugLog('\u001b[32m✓\u001b[0m Permissions to send key strokes granted!\n')
 }
 
-const selectedInput = new Input()
-selectedInput.openPort(selectedPortIndex)
+input.openPort(selectedPortIndex)
 console.log(
   `\u001b[32m✓\u001b[0m Connected to \u001b[3m${selectedPortName}\u001b[0m Press \u001b[1mCTRL+C\u001b[0m to exit\n`,
 )
 
-selectedInput.on('message', (deltaTime, message) => {
+input.on('message', (deltaTime, message) => {
   const parsed = new MidiMessage(message, deltaTime)
   var matcherFn = matcherFunctionsByType.get(parsed.type)
   let keys = null
