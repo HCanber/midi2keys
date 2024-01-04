@@ -189,6 +189,10 @@ input.on('message', (deltaTime, message) => {
   }
 })
 
+process.on('SIGINT', function () {
+  process.exit(0)
+})
+
 function parsedToConfig(parsed) {
   let type
   let value
