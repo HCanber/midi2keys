@@ -155,16 +155,32 @@ selectedInput.on('message', (deltaTime, message) => {
 })
 
 function parsedToConfig(parsed) {
+  let type
+  let value
   switch (parsed.type) {
     case MessageTypes.CC:
-      return [`cc:${parsed.number}`, `ch:${parsed.channel}`, parsed.value]
+      type = 'cc'
+      value = 'value'
+      break
     case MessageTypes.NOTE_ON:
-      return [`on:${parsed.number}`, `ch:${parsed.channel}`, parsed.value]
+      type = 'on'
+      value = 'velocity'
+      break
     case MessageTypes.NOTE_OFF:
-      return [`off:${parsed.number}`, `ch:${parsed.channel}`, parsed.value]
+      type = 'off'
+      value = 'velocity'
+      break
     default:
-      return [`${parsed.type}`, parsed.number, `ch:${parsed.channel}`, parsed.value]
+      type = parsed.type
+      value = 'value'
+      break
   }
+  return [
+    `${type.padStart(3)}`,
+    parsed.number.toString().padStart(3),
+    `ch: ${parsed.channel.toString().padStart(2)}`,
+    `${value.padStart(8)}: ${parsed.value.toString().padStart(3)}`,
+  ]
 }
 
 function keyToString(k) {
