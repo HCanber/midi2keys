@@ -25,6 +25,20 @@ This is a simple program that listens to a midi device and sends key strokes to 
 
 - On Mac, the terminal app needs to be granted _System Settings > Privacy & Security > Accessibility_ permissions. The program will check and help you with this if it's not set. TYhe reason it needs this is to be able to send key strokes,
 
+- Create a config file (see below). You can start by copying [example_config.jsonc](example_config.jsonc) and edit it.
+
+  - Mac:
+
+    ```sh
+    cp example_config.jsonc config.jsonc
+    ```
+
+  - Windows:
+
+    ```sh
+    copy example_config.jsonc config.jsonc
+    ```
+
 ### Running
 
 Run the program with:

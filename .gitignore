@@ -1,3 +1,7 @@
+# Prevent additional config files. example_config.jsonc will still be tracked as it's already been added
+config.jsonc
+*_config*.jsonc
+
 # Logs
 logs
 *.log
