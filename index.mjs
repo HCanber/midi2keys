@@ -1,17 +1,16 @@
-import fs from 'node:fs/promises'
 import Path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { program } from 'commander'
 import enquirerPkg from 'enquirer'
 import hasPermissions from 'macos-accessibility-permissions'
-import midiPkg from 'midi'
 import { MessageTypes, MidiMessage } from 'midi-message-parser'
 import robotjsPkg from 'robotjs'
-import stripJsonComments from 'strip-json-comments'
 import { parseConfig } from './lib/config.mjs'
-import { debuglog } from 'node:util'
+import { debugLog, setDebugLog } from './lib/debugLog.mjs'
+import { fileExists, getDirName, readFile, writeFile } from './lib/fs.mjs'
+import { parseJson, parseJsonFile } from './lib/json.mjs'
+import { getInputAndMidiPorts } from './lib/midi.mjs'
+import { uppercaseFirstLetter } from './lib/string.mjs'
 
-const { Input } = midiPkg
 const { Confirm, Select } = enquirerPkg
 const { keyTap } = robotjsPkg
 
@@ -19,8 +18,9 @@ const defaultConfigFile = 'midikeys_config.jsonc'
 const exampleConfigFile = 'example_config.jsonc'
 const emptyStringFormat = () => ''
 
-const __dirname = Path.dirname(fileURLToPath(import.meta.url))
-const packageJson = JSON.parse(await fs.readFile(Path.resolve(__dirname, './package.json'), 'utf8'))
+const __dirname = getDirName(import.meta.url)
+const packageJson = await parseJsonFile(Path.resolve(__dirname, './package.json'))
+
 program
   .option('-c, --config <filename>', 'The config file to use')
   .option(
@@ -40,13 +40,13 @@ program
   .showHelpAfterError(true)
   .parse(process.argv)
 
+// Show help if "/?" is passed as argument
 if (process.argv.some((arg) => arg === '/?')) {
-  program.help()
+  program.help() // will exit
 }
 
 var args = program.opts()
-const debugLog = args.debug ? console.log : () => {}
-const ifDebug = args.debug ? (fn) => fn(console.log) : () => {}
+setDebugLog(args.debug)
 
 if (args.createConfig) {
   const createConfigArgument = args.createConfig
@@ -57,27 +57,11 @@ if (args.createConfig) {
     )
     process.exit(1)
   }
-  let exampleConfig = await fs.readFile(Path.resolve(__dirname, exampleConfigFile), 'utf8')
-  const { midiPorts } = getInputAndMidiPorts()
-  const none = '<None>'
-  let choices = [...midiPorts.map(({ name }) => ({ name, value: name })), { name: none, value: none }]
-  const portPrompt = new Select({
-    name: 'port',
-    message: 'Select port to set as preferredInput in config file',
-    choices: choices,
-    result(name) {
-      return this.find(name)
-    },
-  })
-
-  const selectedPort = await portPrompt.run()
-  // Replace preferredInput with selected port
-  var { preferredInput: prefInput } = JSON.parse(stripJsonComments(exampleConfig))
-  exampleConfig = exampleConfig.replace(prefInput, selectedPort.value === none ? '' : selectedPort.value)
-  await fs.writeFile(configFilename, exampleConfig)
+  await createConfigFile(exampleConfigFile, configFilename)
   console.log(`Created ${configFilename}`)
   process.exit(0)
 }
+
 let configFilename = args.config
 let configPath = null
 const shouldProcessConfig = !args.listInputs
@@ -101,8 +85,11 @@ if (shouldProcessConfig) {
       console.log(`Config file ${configPath} does not exist.`)
       const createFile = await new Confirm({ message: `Create it?`, format: emptyStringFormat }).run()
       if (!createFile) {
+        console.log('Use --config <filename> to specify a config file.')
         process.exit(0)
       }
+      await createConfigFile(exampleConfigFile, configPath)
+      console.log(`Created ${configFilename}`)
     }
   }
 }
@@ -124,9 +111,9 @@ if (configPath && (await fileExists(configPath))) {
     }Using config file: ${configPath}`,
   )
 
-  const fileContents = (await fs.readFile(configPath, 'utf8')).trim()
+  const fileContents = (await readFile(configPath)).trim()
   if (fileContents.length > 0) {
-    const json = JSON.parse(stripJsonComments(fileContents))
+    const json = parseJson(fileContents)
     config = parseConfig(json)
   }
 }
@@ -224,6 +211,27 @@ process.on('SIGINT', function () {
   process.exit(0)
 })
 
+async function createConfigFile(sourceConfigFile, configFilename) {
+  let exampleConfig = await readFile(Path.resolve(__dirname, sourceConfigFile))
+  const { midiPorts } = getInputAndMidiPorts()
+  const none = '<None>'
+  let choices = [...midiPorts.map(({ name }) => ({ name, value: name })), { name: none, value: none }]
+  const portPrompt = new Select({
+    name: 'port',
+    message: 'Select port to set as preferredInput in config file',
+    choices: choices,
+    result(name) {
+      return this.find(name)
+    },
+  })
+
+  const selectedPort = await portPrompt.run()
+  // Replace preferredInput with selected port
+  var { preferredInput: prefInput } = parseJson(exampleConfig)
+  exampleConfig = exampleConfig.replace(prefInput, selectedPort.value === none ? '' : selectedPort.value)
+  await writeFile(configFilename, exampleConfig)
+}
+
 function parsedToConfig(parsed) {
   let type
   let value
@@ -261,34 +269,4 @@ function keyToString(k) {
       return modifiers?.length ? `${modifiers.map(uppercaseFirstLetter).join('+')} + ${sKey}` : sKey
     })
     .join(', ')
-}
-
-function uppercaseFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1)
-}
-// console.log('Listening for MIDI messages...')
-async function fileExists(filename) {
-  try {
-    await fs.access(filename)
-    return true
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      return false
-    } else {
-      throw err
-    }
-  }
-}
-
-function getInputAndMidiPorts() {
-  // Set up a new midi input.
-  const input = new Input()
-
-  const numberOfPorts = input.getPortCount()
-  const ports = []
-  for (let i = 0; i < numberOfPorts; i++) {
-    const portName = input.getPortName(i)
-    ports.push({ name: portName, index: i })
-  }
-  return { input, midiPorts: ports }
 }
