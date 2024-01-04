@@ -83,24 +83,16 @@ let configPath = null
 const shouldProcessConfig = !args.listInputs
 if (shouldProcessConfig) {
   if (!configFilename && !args.monitor) {
-    console.log('No config file specified. Use -c <filename> to specify a config file.')
     const suggestedFilename = (await fileExists(defaultConfigFile))
       ? defaultConfigFile
       : (await fileExists(exampleConfigFile))
       ? exampleConfigFile
       : null
-    let useDefaultConfig = false
+
     if (suggestedFilename) {
-      useDefaultConfig = await new Confirm({
-        message: `Use: ${suggestedFilename}?`,
-        format: emptyStringFormat,
-        initial: true,
-      }).run()
-    }
-    if (useDefaultConfig) {
       configPath = Path.resolve(suggestedFilename)
     } else if (!args.monitor) {
-      console.log('No config file specified and --monitor has not been specified. Exiting.')
+      console.log('No config file specified. Use --create-config to create one. Exiting.')
       process.exit(0)
     }
   } else if (configFilename) {
@@ -126,6 +118,12 @@ if (args.listInputs) {
 // Read config file if it exists
 let config = null
 if (configPath && (await fileExists(configPath))) {
+  debugLog(
+    `${
+      !configFilename ? 'No config file specified. Use -c <filename> to specify a config file.\n' : ''
+    }Using config file: ${configPath}`,
+  )
+
   const fileContents = (await fs.readFile(configPath, 'utf8')).trim()
   if (fileContents.length > 0) {
     const json = JSON.parse(stripJsonComments(fileContents))
