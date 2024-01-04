@@ -33,6 +33,10 @@ program
   .showHelpAfterError(true)
   .parse(process.argv)
 
+if (process.argv.some((arg) => arg === '/?')) {
+  program.help()
+}
+
 var args = program.opts()
 const debugLog = args.debug ? console.log : () => {}
 const ifDebug = args.debug ? (fn) => fn(console.log) : () => {}
