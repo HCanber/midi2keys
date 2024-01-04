@@ -8,6 +8,7 @@ import { MessageTypes, MidiMessage } from 'midi-message-parser'
 import robotjsPkg from 'robotjs'
 import stripJsonComments from 'strip-json-comments'
 import { parseConfig } from './lib/config.mjs'
+import { debuglog } from 'node:util'
 
 const { Input } = midiPkg
 const { Confirm, Select } = enquirerPkg
@@ -157,10 +158,13 @@ if (matcherFunctionsByType.size > 0 && process.platform === 'darwin') {
   }
   debugLog('\u001b[32m✓\u001b[0m Permissions to send key strokes granted!\n')
 }
+var monitorIncomingMidi = args.monitor
 
 input.openPort(selectedPortIndex)
 console.log(
-  `\u001b[32m✓\u001b[0m Connected to \u001b[3m${selectedPortName}\u001b[0m Press \u001b[1mCTRL+C\u001b[0m to exit\n`,
+  `\u001b[32m✓\u001b[0m Connected to \u001b[3m${selectedPortName}\u001b[0m.\n${
+    monitorIncomingMidi ? '  Monitoring incoming MIDI messages.\n' : ''
+  }  Press \u001b[1mCTRL+C\u001b[0m to exit\n`,
 )
 
 input.on('message', (deltaTime, message) => {
@@ -177,7 +181,7 @@ input.on('message', (deltaTime, message) => {
       }
     }
   }
-  if (args.monitor) {
+  if (monitorIncomingMidi) {
     const p = parsedToConfig(parsed).join(', ')
     const strKeys = keys ? ` => Key: ${keys.map((k) => `\u001b[1m${keyToString(k)}\u001b[0m`).join(', ')}` : ''
     const message = `MIDI: ${p}${strKeys}`
