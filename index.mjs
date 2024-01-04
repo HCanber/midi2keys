@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
-import path from 'node:path'
+import Path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { program } from 'commander'
 import enquirerPkg from 'enquirer'
 import hasPermissions from 'macos-accessibility-permissions'
@@ -18,6 +19,8 @@ const defaultConfigFile = 'config.jsonc'
 const exampleConfigFile = 'example_config.jsonc'
 const emptyStringFormat = () => ''
 
+const __dirname = Path.dirname(fileURLToPath(import.meta.url))
+const packageJson = JSON.parse(await fs.readFile(Path.resolve(__dirname, './package.json'), 'utf8'))
 program
   .option('-c, --config <filename>', 'The config file to use')
   .option(
@@ -28,7 +31,7 @@ program
   .option('-m, --monitor', 'Enable logging of received midi messages')
   .option('-c, --config <filename>', 'The config file to use')
   .option('-d, --debug', 'Enable debug logging, including logging of received midi messages')
-  .version('0.1.0', '-v, --version', 'Outputs the version number')
+  .version(packageJson.version, '-v, --version', 'Outputs the version number')
   .helpOption('-h, --help', 'Display this help')
   .showSuggestionAfterError(true)
   .showHelpAfterError(true)
@@ -62,13 +65,13 @@ if (shouldProcessConfig) {
       }).run()
     }
     if (useDefaultConfig) {
-      configPath = path.resolve(suggestedFilename)
+      configPath = Path.resolve(suggestedFilename)
     } else if (!args.monitor) {
       console.log('No config file specified and --monitor has not been specified. Exiting.')
       process.exit(0)
     }
   } else if (configFilename) {
-    configPath = path.resolve(configFilename)
+    configPath = Path.resolve(configFilename)
     if (!(await fileExists(configPath))) {
       console.log(`Config file ${configPath} does not exist.`)
       const createFile = await new Confirm({ message: `Create it?`, format: emptyStringFormat }).run()
