@@ -18,12 +18,19 @@ const exampleConfigFile = 'example_config.jsonc'
 const emptyStringFormat = () => ''
 
 program
-  .version('0.1.0')
   .option('-c, --config <filename>', 'The config file to use')
-  .option('-i, --input <name>', 'The name of the midi input to use')
+  .option(
+    '-i, --input <name>',
+    'The name of the midi input to use. Use --list-inputs to list available inputs. Will override preferredInput in config file.',
+  )
+  .option('    --list-inputs', 'List available midi inputs')
   .option('-m, --monitor', 'Enable logging of received midi messages')
   .option('-c, --config <filename>', 'The config file to use')
   .option('-d, --debug', 'Enable debug logging, including logging of received midi messages')
+  .version('0.1.0', '-v, --version', 'Outputs the version number')
+  .helpOption('-h, --help', 'Display this help')
+  .showSuggestionAfterError(true)
+  .showHelpAfterError(true)
   .parse(process.argv)
 
 var args = program.opts()
@@ -32,32 +39,47 @@ const ifDebug = args.debug ? (fn) => fn(console.log) : () => {}
 
 let configFilename = args.config
 let configPath = null
-if (!configFilename && !args.monitor) {
-  console.log('No config file specified. Use -c <filename> to specify a config file.')
-  const defaultConfigFileExists = await fileExists(defaultConfigFile)
-  const suggestedFilename = defaultConfigFileExists ? defaultConfigFile : exampleConfigFile
-  const useDefaultConfig = await new Confirm({
-    message: `Use: ${suggestedFilename}?`,
-    format: emptyStringFormat,
-    initial: true,
-  }).run()
-  if (useDefaultConfig) {
-    configPath = path.resolve(suggestedFilename)
-  } else if (!args.monitor) {
-    console.log('No config file specified and --monitor has not been specified. Exiting.')
-    process.exit(0)
-  }
-} else if (configFilename) {
-  configPath = path.resolve(configFilename)
-  if (!(await fileExists(configPath))) {
-    console.log(`Config file ${configPath} does not exist.`)
-    const createFile = await new Confirm({ message: `Create it?`, format: emptyStringFormat }).run()
-    if (!createFile) {
+const shouldProcessConfig = !args.listInputs
+if (shouldProcessConfig) {
+  if (!configFilename && !args.monitor) {
+    console.log('No config file specified. Use -c <filename> to specify a config file.')
+    const defaultConfigFileExists = await fileExists(defaultConfigFile)
+    const suggestedFilename = defaultConfigFileExists ? defaultConfigFile : exampleConfigFile
+    const useDefaultConfig = await new Confirm({
+      message: `Use: ${suggestedFilename}?`,
+      format: emptyStringFormat,
+      initial: true,
+    }).run()
+    if (useDefaultConfig) {
+      configPath = path.resolve(suggestedFilename)
+    } else if (!args.monitor) {
+      console.log('No config file specified and --monitor has not been specified. Exiting.')
       process.exit(0)
+    }
+  } else if (configFilename) {
+    configPath = path.resolve(configFilename)
+    if (!(await fileExists(configPath))) {
+      console.log(`Config file ${configPath} does not exist.`)
+      const createFile = await new Confirm({ message: `Create it?`, format: emptyStringFormat }).run()
+      if (!createFile) {
+        process.exit(0)
+      }
     }
   }
 }
+// Set up a new input.
+const input = new Input()
 
+// Count the available input ports.
+const midiPorts = getMidiPorts(input)
+
+if (args.listInputs) {
+  console.log('Available MIDI inputs:')
+  for (const { name } of midiPorts) {
+    console.log(`  "${name}"`)
+  }
+  process.exit(0)
+}
 // Read config file if it exists
 let config = null
 if (configPath && (await fileExists(configPath))) {
@@ -71,30 +93,25 @@ if (config === null) {
   config = { matcherFunctionsByType: new Map() }
 }
 
-let { preferredInput } = config
+let { preferredInput = null } = config
 const { matcherFunctionsByType } = config
 
 if (args.input) {
   preferredInput = args.input
 }
-// Set up a new input.
-const input = new Input()
 
-// Count the available input ports.
-const numberOfPorts = input.getPortCount()
 let selectedPortIndex = null
 let selectedPortName = null
-let options = []
-for (let i = 0; i < numberOfPorts; i++) {
-  const portName = input.getPortName(i)
-  if (portName === preferredInput) {
-    selectedPortIndex = i
-    selectedPortName = preferredInput
+let options = midiPorts.map(({ name, index }) => ({ name, value: index }))
+if (preferredInput) {
+  const port = midiPorts.find((p) => p.name === preferredInput)
+  if (port) {
+    selectedPortIndex = port.index
+    selectedPortName = port.name
     options = null
-    break //stop looping
   }
-  options.push({ name: portName, value: i })
 }
+
 if (options) {
   const portPrompt = new Select({
     name: 'port',
@@ -212,4 +229,14 @@ async function fileExists(filename) {
       throw err
     }
   }
+}
+
+function getMidiPorts(input) {
+  const numberOfPorts = input.getPortCount()
+  const ports = []
+  for (let i = 0; i < numberOfPorts; i++) {
+    const portName = input.getPortName(i)
+    ports.push({ name: portName, index: i })
+  }
+  return ports
 }

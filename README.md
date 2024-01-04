@@ -49,6 +49,12 @@ node index.mjs --config <filename>
 
 where `<filename>` is the name of the config file.
 
+If you only want to use the program as a MIDI monitor, you can run it with:
+
+```sh
+node index.mjs --monitor
+```
+
 ### Options
 
 ```text
@@ -56,17 +62,16 @@ Usage: node index.mjs --config <filename> [options]
 
 Options:
   -c, --config <filename>  The config file to use
-  -i, --input <name>       The name of the midi input to use
+  -i, --input <name>       The name of the midi input to use. Use --list-inputs
+                           to list available inputs. Will override preferredInput
+                           in config file.
+      --list-inputs        List available midi inputs
   -m, --monitor            Enable logging of received midi messages
-  -d, --debug              Enable debug logging, including logging of received midi messages
-  -V, --version            output the version number
-  -h, --help               display help for command
-```
-
-If you only want to use the program as a MIDI monitor, you can run it with:
-
-```sh
-node index.mjs --monitor
+  -c, --config <filename>  The config file to use
+  -d, --debug              Enable debug logging, including logging of received
+                           midi messages
+  -v, --version            Outputs the version number
+  -h, --help               Display this help
 ```
 
 ## Config File
