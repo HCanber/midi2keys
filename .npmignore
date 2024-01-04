@@ -1,0 +1,7 @@
+.node-version
+.prettierignore
+.prettierrc
+.vscode/
+config.jsonc
+*_config*.jsonc
+!example_config.jsonc
