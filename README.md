@@ -56,6 +56,7 @@ Usage: node index.mjs --config <filename> [options]
 
 Options:
   -c, --config <filename>  The config file to use
+  -i, --input <name>       The name of the midi input to use
   -m, --monitor            Enable logging of received midi messages
   -d, --debug              Enable debug logging, including logging of received midi messages
   -V, --version            output the version number

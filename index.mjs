@@ -20,6 +20,7 @@ const emptyStringFormat = () => ''
 program
   .version('0.1.0')
   .option('-c, --config <filename>', 'The config file to use')
+  .option('-i, --input <name>', 'The name of the midi input to use')
   .option('-m, --monitor', 'Enable logging of received midi messages')
   .option('-c, --config <filename>', 'The config file to use')
   .option('-d, --debug', 'Enable debug logging, including logging of received midi messages')
@@ -92,8 +93,12 @@ if (config === null) {
   config = { matcherFunctionsByType: new Map() }
 }
 
-const { preferredInput, matcherFunctionsByType } = config
+let { preferredInput } = config
+const { matcherFunctionsByType } = config
 
+if (args.input) {
+  preferredInput = args.input
+}
 // Set up a new input.
 const input = new Input()
 
