@@ -290,7 +290,13 @@ async function loadConfig(specifiedConfigFile = null) {
   )
 
   const json = await parseJsonFile(configPath, { defaultWhenEmpty: null })
-  return json ? parseConfig(json) : null
+  if (!json) return null
+  try {
+    return parseConfig(json)
+  } catch (e) {
+    console.error(`Error parsing config file ${configPath}:\n${e.message}`)
+    process.exit(1)
+  }
 }
 
 function parsedToConfig(parsed) {
