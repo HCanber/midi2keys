@@ -1,6 +1,6 @@
 {
   "name": "@hcanber/midi2keys",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Converts MIDI messages to keyboard strokes",
   "main": "index.js",
   "author": "Håkan Canberger <800302+HCanber@users.noreply.github.com>",
