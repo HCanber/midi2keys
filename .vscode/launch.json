@@ -13,6 +13,16 @@
       "args": ["--debug", "--monitor", "-c", "example_config.jsonc"],
       "outFiles": ["${workspaceFolder}/**/*.js"],
       "console": "externalTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Help",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/index.mjs",
+      "args": ["--help"],
+      "outFiles": ["${workspaceFolder}/**/*.js"],
+      "console": "externalTerminal"
     }
   ]
 }
