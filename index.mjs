@@ -187,7 +187,15 @@ async function connectAndHandleMidiMessages(config, configPreferredInput, monito
       if (keys) {
         for (const k of keys) {
           for (const { key, modifiers } of k) {
-            keyTap(key, modifiers)
+            try {
+              keyTap(key, modifiers)
+            } catch (e) {
+              console.error(
+                `\u001b[31mFailed to send key stroke \u001b[1m${keyToString(k)}\u001b[0m: \u001b[31m${
+                  e.message
+                }\u001b[0m`,
+              )
+            }
           }
         }
       }
@@ -319,7 +327,7 @@ function keyToString(k) {
   return ks
     .map(({ key, modifiers }) => {
       var sKey = uppercaseFirstLetter(key)
-      return modifiers?.length ? `${modifiers.map(uppercaseFirstLetter).join('+')} + ${sKey}` : sKey
+      return modifiers?.length ? `${modifiers.map(uppercaseFirstLetter).join('+')}+${sKey}` : sKey
     })
     .join(', ')
 }
