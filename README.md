@@ -17,28 +17,52 @@ This is a simple program that listens to a midi device and sends key strokes to 
 ### Prerequisites
 
 - Install [Node.js](https://nodejs.org/en/) (v20 or later)
-- On Mac, the terminal app needs to be granted _System Settings > Privacy & Security > Accessibility_ permissions. The program will check and help you with this if it's not set. TYhe reason it needs this is to be able to send key strokes,
+- On Mac, the terminal app needs to be granted _System Settings > Privacy & Security > Accessibility_ permissions. The program will check and help you with this if it's not set. The reason it needs this is to be able to send key strokes.
 
-- Create a config file (see below). You can start by create a config based on [example_config.jsonc](example_config.jsonc) and edit it.
+### Two ways to run
 
-  ```sh
-  npx github:hcanber/midi2keys create-config
-  ```
+Either you install it globally or you run it using npx.
+
+#### Install globally
+
+Run the following command in a terminal to install it globally:
+
+```sh
+npm install -g github:hcanber/midi2keys
+```
+
+After this you can use `midi2keys` as a command.
+
+#### Run using npx
+
+You can also run it using npx, which means that you don't have to install it globally. The downside is that it will be slower to start .
+
+In the instructions below, replace `midi2keys` with `npx github:hcanber/midi2keys`.
+
+### First time setup
+
+Create a config file (see below). You can start by create a config based on [example_config.jsonc](example_config.jsonc) and edit it.
+
+```sh
+midi2keys create-config
+```
+
+or
+
+```sh
+npx github:hcanber/midi2keys create-config
+```
 
 ### Running
 
 Run the program with:
 
 ```sh
-npx github:hcanber/midi2keys --config <filename>
+midi2keys
 ```
 
-where `<filename>` is the name of the config file.
-
-If you only want to use the program as a MIDI monitor, you can run it with:
-
 ```sh
-npx github:hcanber/midi2keys monitor
+midi2keys monitor
 ```
 
 ### Options
@@ -61,8 +85,7 @@ Options:
 ```text
 Usage: midi2Keys [command]
 Commands:
-  create-config [filename]  Creates a config file based on example config. Use this as a starting
-                            point
+  create-config [filename]  Creates a config file based on example config. Use this as a starting point
   list-inputs               List available midi inputs
   monitor [options]         Logs received midi messages
   help [command]            display help for command
